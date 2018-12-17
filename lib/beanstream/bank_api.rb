@@ -7,11 +7,11 @@ module Beanstream
         merchantId: Beanstream.merchant_id,
         passCode: Beanstream.profiles_api_key,
         serviceVersion: "1.0",
-        subMerchantId: Beanstream.sub_merchant_id
+        subMerchantId: Beanstream.sub_merchant_id,
+        operationType: 'N'
       }
 
       # //customerCode:{{profileId}}
-      query_string[:operationType] = profile[:operation]
       query_string[:bankAccountType] = profile[:bank_account_type]
       query_string[:bankAccountHolder] = profile[:accoiunt_holder]
       query_string[:institutionNumber] = profile[:institution_number]
