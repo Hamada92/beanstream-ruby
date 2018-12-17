@@ -1,3 +1,5 @@
+require 'active_support/all'
+
 require 'beanstream/transaction'
 require 'beanstream/payments_api'
 require 'beanstream/profiles_api'

@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency('rest-client', '~> 1.4')
   s.add_dependency('json', '~> 1.8.1')
+  s.add_dependency('activesupport')
 
   s.add_development_dependency('shoulda', '~> 3.4.0')
   s.add_development_dependency('test-unit')
