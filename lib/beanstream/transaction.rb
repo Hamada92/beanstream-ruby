@@ -31,7 +31,7 @@ module Beanstream
       }
 
       if sub_merchant_id
-        red_params.fetch(:headers).merge({:'Sub-Merchant-Id' => sub_merchant_id})
+        req_params.fetch(:headers).merge({:'Sub-Merchant-Id' => sub_merchant_id})
       end
       
       begin
