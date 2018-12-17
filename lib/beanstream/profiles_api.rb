@@ -70,7 +70,7 @@ module Beanstream
     end
     
     def create_profile(profile)
-      val = transaction_post("POST", profile_url, Beanstream.merchant_id, Beanstream.profiles_api_key, profile)
+      val = transaction_post("POST", profile_url, Beanstream.merchant_id, Beanstream.profiles_api_key, profile, sub_merchant_id: Beanstream.sub_merchant_id)
     end
     
     def delete_profile(profileId)
