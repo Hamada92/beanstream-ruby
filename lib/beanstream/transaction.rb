@@ -10,7 +10,7 @@ module Beanstream
       enc = Base64.encode64(str).gsub("\n", "")
     end
     
-    def transaction_post(method, url_path, merchant_id, api_key, data={})
+    def transaction_post(method, url_path, merchant_id, api_key, data={}, sub_merchant_id: nil)
       enc = encode(merchant_id, api_key)
       
       path = Beanstream.api_host_url+url_path
@@ -29,6 +29,10 @@ module Beanstream
         :url => path,
         :payload => data.to_json
       }
+
+      if sub_merchant_id
+        req_params[:headers][:'Sub-Merchant-Id'] = sub_merchant_id
+      end
       
       begin
         result = RestClient::Request.execute(req_params)
@@ -80,6 +84,7 @@ module Beanstream
       elsif code >= 500
         raise InternalServerException.new(code, category, message, http_status_code)
       else
+        puts obj
         raise BeanstreamException.new(code, category, message, http_status_code)
       end
     end

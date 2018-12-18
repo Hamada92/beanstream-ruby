@@ -19,6 +19,36 @@ To install the SDK you just need to simply install the gem file:
 gem install beanstream --pre
 ```
 
+# Profiles
+Create a profile with a raw credit card: 
+```ruby
+body = {
+  "card": {
+    "name": "Jon Doe",
+    "number": "4030000010001234",
+    "expiry_month": "02",
+    "expiry_year": "18",
+    "cvd": "123"
+  },
+  "billing": {
+      "name": "Jon Doe",
+         "address_line1": "123 Main St.",
+         "address_line2": "",
+         "city": "victoria",
+         "province": "bc",
+         "country": "ca",
+         "postal_code": "V9B3Z4",
+  }
+}
+
+Beanstream.ProfilesAPI().create_profile(profile)
+```
+
+Get a profile: 
+```ruby
+Beanstrea.ProfilesAPI().get_profile(profile_id)
+```
+
 # Code Sample
 Take a credit card Payment:
 ```ruby
