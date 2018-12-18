@@ -10,7 +10,7 @@ module Beanstream
       enc = Base64.encode64(str).gsub("\n", "")
     end
     
-    def transaction_post(method, url_path, merchant_id, api_key, data={}, sub_merchant_id: nil)
+    def transaction_post(method, url_path, merchant_id, api_key, data={})
       enc = encode(merchant_id, api_key)
       
       path = Beanstream.api_host_url+url_path
@@ -30,8 +30,8 @@ module Beanstream
         :payload => data.to_json
       }
 
-      if sub_merchant_id
-        req_params[:headers][:'Sub-Merchant-Id'] = sub_merchant_id
+      if Beanstream.sub_merchant_id
+        req_params[:headers][:'Sub-Merchant-Id'] = Beanstream.sub_merchant_id
       end
       
       begin
