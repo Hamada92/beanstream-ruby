@@ -43,6 +43,26 @@ body = {
 
 Beanstream.ProfilesAPI().create_profile(profile)
 ```
+Create a profile with bank info:
+```ruby
+Beanstream::BankAPI.new().create_profile({
+  operation: "N",
+  bank_account_type: "PC",
+  accoiunt_holder: "John Doe",
+  institution_number: 123,
+  routing_number: 123456789,
+  branch_number: 12345,
+  account_number: 123456789,
+  billing_contact: "Rosanna+Sylvester",
+  billing_email: "joe@mydomain.com",
+  billing_phone: "2504722326",
+  billing_address: "123+Main+Street",
+  billing_city: "New York",
+  billing_postal: "10027",
+  billing_province: "NY",
+  billing_country: "US  ",
+})
+```
 
 Get a profile: 
 ```ruby
