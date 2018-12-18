@@ -20,11 +20,12 @@ gem install beanstream --pre
 ```
 
 # Profiles
-Create a profile with a raw credit card: 
+Create a profile with a raw credit card:
+
 ```ruby
-Beanstream.sub_merchant_id = "300211435"
-Beanstream.merchant_id = "300211434"
-Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
+Beanstream.sub_merchant_id = "XXXXXXXX"
+Beanstream.merchant_id = "XXXXXXXX"
+Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
 
 body = {
   "card": {
@@ -48,18 +49,51 @@ body = {
 Beanstream.ProfilesAPI().create_profile(profile)
 ```
 
-Create a profile with bank info:
+Get a profile:
+
 ```ruby
-Beanstream.merchant_id = "300211434"
-Beanstream.sub_merchant_id = "300211435"
-Beanstream.payments_api_key = "398fb50b8AF945F89E75a87003B2d341"
-Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
-Beanstream.batch_api_key = "EA5b9173E9644aD0aFc3cAFFd071e067"
+Beanstrea.ProfilesAPI().get_profile(profile_id)
+```
+
+
+Make CC payment using profile:
+
+```ruby
+Beanstream.sub_merchant_id = "XXXXXXXX"
+Beanstream.merchant_id = "XXXXXXXX"
+Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
+Beanstream.payments_api_key = "XXXXXXXXXXXXXXXXXXXXX"
+
+profile = {
+  "amount": 100.00,
+  "payment_method":"payment_profile",
+  "payment_profile": { 
+    "customer_code": "XXXXXXXXXXXXXXXXXXXXX", 
+    "card_id": "1",
+    "complete": true
+  }
+}
+
+Beanstream::PaymentsAPI.new.make_payment(profile)
+
+Response: 
+
+{"id"=>"10000006", "authorizing_merchant_id"=>XXXXXXXX, "approved"=>"1", "message_id"=>"1", "message"=>"Approved", "auth_code"=>"TEST", "created"=>"2018-12-17T20:51:05", "order_number"=>"10000006", "type"=>"P", "payment_method"=>"CC", "risk_score"=>0.0, "amount"=>100.0, "custom"=>{"ref1"=>"", "ref2"=>"", "ref3"=>"", "ref4"=>"", "ref5"=>""}, "card"=>{"card_type"=>"VI", "last_four"=>"1234", "address_match"=>0, "postal_result"=>0, "avs_result"=>"0", "cvd_result"=>"2", "avs"=>{"id"=>"N", "message"=>"Street address and Postal/ZIP do not match.", "processed"=>true}}, "links"=>[{"rel"=>"void", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/void", "method"=>"POST"}, {"rel"=>"return", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/returns", "method"=>"POST"}]}
+
+```
+
+# Bank API (legacy)
+
+### Create profile:
+
+```ruby
+Beanstream.merchant_id = "XXXXXXXX"
+Beanstream.sub_merchant_id = "XXXXXXXX"
+Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
 
 Beanstream::BankAPI.new().create_profile({
-  operation: "N",
   bank_account_type: "PC",
-  accoiunt_holder: "John Doe",
+  account_holder: "John Doe",
   institution_number: 123,
   routing_number: 123456789,
   branch_number: 12345,
@@ -75,38 +109,105 @@ Beanstream::BankAPI.new().create_profile({
 })
 ```
 
-Get a profile: 
-```ruby
-Beanstrea.ProfilesAPI().get_profile(profile_id)
+**Response:**
+
 ```
-
-
-Make CC payment using profile: 
-```ruby
-Beanstream.sub_merchant_id = "300211435"
-Beanstream.merchant_id = "300211434"
-Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
-Beanstream.payments_api_key = "398fb50b8AF945F89E75a87003B2d341"
-
-profile = {
-  "amount": 100.00,
-  "payment_method":"payment_profile",
-  "payment_profile": { 
-    "customer_code": "38D6D7F817284808b282dCEA67966267", 
-    "card_id": "1",
-    "complete": true
-  }
+{
+  "customerCode"=>"XXXXXXXXXXXXXXXXXXX",
+  "responseCode"=>"1",
+  "responseMessage"=>"Operation Successful",
+  "trnOrderNumber"=>nil,
+  "trnCardNumber"=>nil,
+  "cardType"=>nil,
+  "httpStatusCode"=>"200",
+  "category"=>"1"
 }
+```
 
-Beanstream::PaymentsAPI.new.make_payment(profile)
+### Update profile:
 
-Response: 
+```ruby
+Beanstream.merchant_id = "XXXXXXXX"
+Beanstream.sub_merchant_id = "XXXXXXXX"
+Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
 
-{"id"=>"10000006", "authorizing_merchant_id"=>300211434, "approved"=>"1", "message_id"=>"1", "message"=>"Approved", "auth_code"=>"TEST", "created"=>"2018-12-17T20:51:05", "order_number"=>"10000006", "type"=>"P", "payment_method"=>"CC", "risk_score"=>0.0, "amount"=>100.0, "custom"=>{"ref1"=>"", "ref2"=>"", "ref3"=>"", "ref4"=>"", "ref5"=>""}, "card"=>{"card_type"=>"VI", "last_four"=>"1234", "address_match"=>0, "postal_result"=>0, "avs_result"=>"0", "cvd_result"=>"2", "avs"=>{"id"=>"N", "message"=>"Street address and Postal/ZIP do not match.", "processed"=>true}}, "links"=>[{"rel"=>"void", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/void", "method"=>"POST"}, {"rel"=>"return", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/returns", "method"=>"POST"}]}
+Beanstream::BankAPI.new().update_profile({
+  customer_code: 'XXXXXXXXXXXXXXXXXXXXXXXXXX',
+  bank_account_type: "PC",
+  account_holder: "John Doe",
+  institution_number: 123,
+  routing_number: 123456789,
+  branch_number: 12345,
+  account_number: 123456789,
+  billing_contact: "Rosanna+Sylvester",
+  billing_email: "joe@mydomain.com",
+  billing_phone: "2504722326",
+  billing_address: "123+Main+Street",
+  billing_city: "New York",
+  billing_postal: "10027",
+  billing_province: "NY",
+  billing_country: "US  ",
+})
+```
+
+**Response:**
 
 ```
+{
+  "customerCode"=>"XXXXXXXXXXXXXXXXXXX",
+  "responseCode"=>"1",
+  "responseMessage"=>"Operation Successful",
+  "trnOrderNumber"=>nil,
+  "trnCardNumber"=>nil,
+  "cardType"=>nil,
+  "httpStatusCode"=>"200",
+  "category"=>"1"
+}
+```
+
+### Get profile
+```ruby
+Beanstream.merchant_id = "XXXXXXXX"
+Beanstream.sub_merchant_id = "XXXXXXXX"
+Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
+
+result = Beanstream::BankAPI.new().get_profile({
+  customer_code: 'XXXXXXXXXXXXXXXXXXXXXXXXXX'
+})
+```
+
+**Response:**
+
+```
+{
+  "customerCode"=>"XXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "customerLanguage"=>"en",
+  "responseCode"=>"1",
+  "responseMessage"=>"Operation Successful",
+  "status"=>"A",
+  "ordName"=>"Rosanna+Sylvester",
+  "ordAddress1"=>"123+Main+Street",
+  "ordAddress2"=>nil,
+  "ordCity"=>"New York",
+  "ordProvince"=>"NY",
+  "ordCountry"=>"US",
+  "ordPostalCode"=>"10027",
+  "ordEmailAddress"=>"joe@mydomain.com",
+  "ordPhoneNumber"=>"2504722326",
+  "profileGroup"=>nil,
+  "velocityGroup"=>nil,
+  "accountRef"=>nil,
+  "trnCardNumber"=>nil,
+  "trnCardExpiry"=>nil,
+  "bankAccountType"=>"PC",
+  "lastCCTransDate"=>"1/1/1900",
+  "paymentModifiedDate"=>"1/1/1900"
+}
+```
+
 # Code Sample
 Take a credit card Payment:
+
 ```ruby
 begin
   result = Beanstream.PaymentsAPI.make_payment(
