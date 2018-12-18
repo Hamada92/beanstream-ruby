@@ -166,7 +166,7 @@ Beanstream::BankAPI.new().create_profile({
 ```
 
 ### Get profile
-```
+```ruby
 Beanstream.merchant_id = "XXXXXXXX"
 Beanstream.sub_merchant_id = "XXXXXXXX"
 Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
