@@ -131,7 +131,7 @@ Beanstream.merchant_id = "XXXXXXXX"
 Beanstream.sub_merchant_id = "XXXXXXXX"
 Beanstream.profiles_api_key = "XXXXXXXXXXXXXXXXXXXXX"
 
-Beanstream::BankAPI.new().create_profile({
+Beanstream::BankAPI.new().update_profile({
   customer_code: 'XXXXXXXXXXXXXXXXXXXXXXXXXX',
   bank_account_type: "PC",
   account_holder: "John Doe",
