@@ -22,6 +22,10 @@ gem install beanstream --pre
 # Profiles
 Create a profile with a raw credit card: 
 ```ruby
+Beanstream.sub_merchant_id = "300211435"
+Beanstream.merchant_id = "300211434"
+Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
+
 body = {
   "card": {
     "name": "Jon Doe",
@@ -43,8 +47,15 @@ body = {
 
 Beanstream.ProfilesAPI().create_profile(profile)
 ```
+
 Create a profile with bank info:
 ```ruby
+Beanstream.merchant_id = "300211434"
+Beanstream.sub_merchant_id = "300211435"
+Beanstream.payments_api_key = "398fb50b8AF945F89E75a87003B2d341"
+Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
+Beanstream.batch_api_key = "EA5b9173E9644aD0aFc3cAFFd071e067"
+
 Beanstream::BankAPI.new().create_profile({
   operation: "N",
   bank_account_type: "PC",
@@ -69,6 +80,31 @@ Get a profile:
 Beanstrea.ProfilesAPI().get_profile(profile_id)
 ```
 
+
+Make CC payment using profile: 
+```ruby
+Beanstream.sub_merchant_id = "300211435"
+Beanstream.merchant_id = "300211434"
+Beanstream.profiles_api_key = "D44B80DD9D7B45418EC6832298DC4DF3"
+Beanstream.payments_api_key = "398fb50b8AF945F89E75a87003B2d341"
+
+profile = {
+  "amount": 100.00,
+  "payment_method":"payment_profile",
+  "payment_profile": { 
+    "customer_code": "38D6D7F817284808b282dCEA67966267", 
+    "card_id": "1",
+    "complete": true
+  }
+}
+
+Beanstream::PaymentsAPI.new.make_payment(profile)
+
+Response: 
+
+{"id"=>"10000006", "authorizing_merchant_id"=>300211434, "approved"=>"1", "message_id"=>"1", "message"=>"Approved", "auth_code"=>"TEST", "created"=>"2018-12-17T20:51:05", "order_number"=>"10000006", "type"=>"P", "payment_method"=>"CC", "risk_score"=>0.0, "amount"=>100.0, "custom"=>{"ref1"=>"", "ref2"=>"", "ref3"=>"", "ref4"=>"", "ref5"=>""}, "card"=>{"card_type"=>"VI", "last_four"=>"1234", "address_match"=>0, "postal_result"=>0, "avs_result"=>"0", "cvd_result"=>"2", "avs"=>{"id"=>"N", "message"=>"Street address and Postal/ZIP do not match.", "processed"=>true}}, "links"=>[{"rel"=>"void", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/void", "method"=>"POST"}, {"rel"=>"return", "href"=>"https://www.beanstream.com/api/v1/payments/10000006/returns", "method"=>"POST"}]}
+
+```
 # Code Sample
 Take a credit card Payment:
 ```ruby
