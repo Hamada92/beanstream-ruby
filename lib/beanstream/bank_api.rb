@@ -1,34 +1,63 @@
 module Beanstream
   class BankAPI
 
-    def create_profile(profile)
-
-      query_string = {
+    attr_accessor :default_query_string
+    def initialize
+      @default_query_string = {
         merchantId: Beanstream.merchant_id,
         passCode: Beanstream.profiles_api_key,
         serviceVersion: "1.0",
         subMerchantId: Beanstream.sub_merchant_id,
-        operationType: 'N'
       }
 
-      # //customerCode:{{profileId}}
-      query_string[:bankAccountType] = profile[:bank_account_type]
-      query_string[:bankAccountHolder] = profile[:accoiunt_holder]
-      query_string[:institutionNumber] = profile[:institution_number]
-      query_string[:routingNumber] = profile[:routing_number]
-      query_string[:branchNumber] = profile[:branch_number]
-      query_string[:accountNumber] = profile[:account_number]
-      query_string[:ordName] = profile[:billing_contact]
-      query_string[:ordEmailAddress] = profile[:billing_email]
-      query_string[:ordPhoneNumber] = profile[:billing_phone]
-      query_string[:ordAddress1] = profile[:billing_address]
-      query_string[:ordCity] = profile[:billing_city]
-      query_string[:ordPostalCode] = profile[:billing_postal]
-      query_string[:ordProvince] = profile[:billing_province]
-      query_string[:ordCountry] = profile[:billing_country]
+    end
 
+    
 
+    def create_profile(profile)
+      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string[:operationType] = 'N'
       post('POST', '/scripts/payment_profile.asp', query_string)
+    end
+
+    def update_profile(profile)
+      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string[:operationType] = 'M'
+      post('POST', '/scripts/payment_profile.asp', query_string)
+    end
+
+    def get_profile(profile)
+      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string[:operationType] = 'Q'
+      post('POST', '/scripts/payment_profile.asp', query_string)
+    end
+
+
+    private
+
+    def set_query_string(params)
+      query_string = {}
+
+      { customer_code: :customerCode,
+        bank_account_type: :bankAccountType,
+        account_holder: :bankAccountHolder,
+        institution_number: :institutionNumber,
+        routing_number: :routingNumber,
+        branch_number: :branchNumber,
+        account_number: :accountNumber,
+        billing_contact: :ordName,
+        billing_email: :ordEmailAddress,
+        billing_phone: :ordPhoneNumber,
+        billing_address: :ordAddress1,
+        billing_city: :ordCity,
+        billing_postal: :ordPostalCode,
+        billing_province: :ordProvince,
+        billing_country: :ordCountry,
+      }.each do |k,v|
+        query_string[v] = params[k] if params[k]
+      end
+
+      query_string
     end
 
     def encode(merchant_id, api_key)
@@ -59,57 +88,40 @@ module Beanstream
       
       begin
         result = RestClient::Request.execute(req_params)
-        return Hash.from_xml(result)['response']
-      rescue RestClient::ExceptionWithResponse => ex
-        if ex.response
-          raise handle_api_error(ex)
-        else
-          raise handle_restclient_error(ex)
-        end
+        response = Hash.from_xml(result)['response']
+
+        response['responseCode'].to_i == 1 ? response : raise(handle_api_error(response))
       rescue RestClient::Exception => ex
         raise handle_restclient_error(ex)
       end
       
     end    
 
-
     def handle_api_error(ex)
-      #puts "error: #{ex}"
-      
-      http_status_code = ex.http_code
-      message = ex.message
-      code = 0
-      category = 0
-      
       begin
-        obj =  Hash.from_xml(ex.http_body)['response']
-        obj = Util.symbolize_names(obj)
+        obj = Util.symbolize_names(ex)
         code = obj[:responseCode]
-        category = obj[:category]
-        message = obj[:message]
+        message = obj[:responseMessage]
+        "Error #{code}: #{message} #{ex}"
       rescue JSON::ParserError
-        puts "Error parsing xml error message"
+        "Error parsing xml error message"
       end
-      
-      if http_status_code == 302
-        raise InvalidRequestException.new(code, category, "Redirection for IOP and 3dSecure not supported by the Beanstream SDK yet. #{message}", http_status_code)
-      elsif http_status_code == 400
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code == 401
-        raise UnauthorizedException.new(code, category, message, http_status_code)
-      elsif code == 402
-        raise BusinessRuleException.new(code, category, message, http_status_code)
-      elsif code == 403
-        raise ForbiddenException.new(code, category, message, http_status_code)
-      elsif code == 405
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code == 415
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code >= 500
-        raise InternalServerException.new(code, category, message, http_status_code)
+    end
+
+    def handle_restclient_error(e)
+      case e
+      when RestClient::RequestTimeout
+        message = "Could not connect to Beanstream"
+      when RestClient::ServerBrokeConnection
+        message = "The connection to the server broke before the request completed."
+      when RestClient::SSLCertificateNotVerified
+        message = "Could not verify Beanstream's SSL certificate. Please make sure that your network is not intercepting certificates. "
+      when SocketError
+        message = "Unexpected error communicating when trying to connect to Beanstream. "
       else
-        raise BeanstreamException.new(code, category, message, http_status_code)
+        message = "Unexpected error communicating with Beanstream. "
       end
+      raise message + "\n\nNetwork error: #{e.message}"
     end
   end
 end
