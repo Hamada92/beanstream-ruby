@@ -82,9 +82,9 @@ Response:
 
 ```
 
-#Bank API (legacy)
+# Bank API (legacy)
 
-###Create profile:
+### Create profile:
 
 ```ruby
 Beanstream.merchant_id = "XXXXXXXX"
@@ -124,7 +124,7 @@ Beanstream::BankAPI.new().create_profile({
 }
 ```
 
-###Update profile:
+### Update profile:
 
 ```ruby
 Beanstream.merchant_id = "XXXXXXXX"
