@@ -126,7 +126,7 @@ module Beanstream
     # or getProfilePaymentRequestTemplate().
     # +PreAuth+:: For a pre-auth you must set the 'complete' parameter of the Card, Token, or Profile to be 'false'.
     def make_payment(payment)
-      val = transaction_post("POST", make_payment_url, Beanstream.merchant_id, Beanstream.payments_api_key, payment, sub_merchant_id: Beanstream.sub_merchant_id)
+      val = transaction_post("POST", make_payment_url, Beanstream.merchant_id, Beanstream.payments_api_key, payment)
     end
     
     def complete_preauth(transaciton_id, amount)
