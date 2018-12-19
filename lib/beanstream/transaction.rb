@@ -39,7 +39,7 @@ module Beanstream
         JSON.parse(result)
       rescue RestClient::ExceptionWithResponse => ex
         if ex.response
-          raise handle_api_error(ex)
+          handle_api_error(ex)
         else
           raise handle_restclient_error(ex)
         end
@@ -50,42 +50,14 @@ module Beanstream
     end
     
     def handle_api_error(ex)
-      #puts "error: #{ex}"
+      obj = JSON.parse(ex.http_body).merge("status"=> ex.http_code)
+      obj = Util.symbolize_names(obj)
       
-      http_status_code = ex.http_code
-      message = ex.message
-      code = 0
-      category = 0
-      
-      begin
-        obj = JSON.parse(ex.http_body)
-        obj = Util.symbolize_names(obj)
-        code = obj[:code]
-        category = obj[:category]
-        message = obj[:message]
-      rescue JSON::ParserError
-        puts "Error parsing json error message"
+      if ex.http_code == 302
+        obj[:message] = "Redirection for IOP and 3dSecure not supported by the Beanstream SDK yet. #{obj[:message]}"
       end
-      
-      if http_status_code == 302
-        raise InvalidRequestException.new(code, category, "Redirection for IOP and 3dSecure not supported by the Beanstream SDK yet. #{message}", http_status_code)
-      elsif http_status_code == 400
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code == 401
-        raise UnauthorizedException.new(code, category, message, http_status_code)
-      elsif code == 402
-        raise BusinessRuleException.new(code, category, message, http_status_code)
-      elsif code == 403
-        raise ForbiddenException.new(code, category, message, http_status_code)
-      elsif code == 405
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code == 415
-        raise InvalidRequestException.new(code, category, message, http_status_code)
-      elsif code >= 500
-        raise InternalServerException.new(code, category, message, http_status_code)
-      else
-        raise BeanstreamException.new(code, category, message, http_status_code)
-      end
+
+      obj
     end
     
     def handle_restclient_error(e)
