@@ -2,6 +2,7 @@ module Beanstream
   class BankAPI
 
     attr_accessor :default_query_string
+
     def initialize
       @default_query_string = {
         merchantId: Beanstream.merchant_id,
@@ -12,27 +13,39 @@ module Beanstream
 
     end
 
-    
-
     def create_profile(profile)
       query_string = set_query_string(profile).merge(@default_query_string)
       query_string[:operationType] = 'N'
-      post('POST', '/scripts/payment_profile.asp', query_string)
+      post('/scripts/payment_profile.asp', query_string)
     end
 
     def update_profile(profile)
       query_string = set_query_string(profile).merge(@default_query_string)
       query_string[:operationType] = 'M'
-      post('POST', '/scripts/payment_profile.asp', query_string)
+      post('/scripts/payment_profile.asp', query_string)
     end
 
     def get_profile(profile)
       query_string = set_query_string(profile).merge(@default_query_string)
       query_string[:operationType] = 'Q'
-      post('POST', '/scripts/payment_profile.asp', query_string)
+      post('/scripts/payment_profile.asp', query_string)
     end
 
+    def batch_payments(merchant_id, transactions)
+      content = nil
+      transactions.each do |row|
+        content = row.join(",")
+      end
 
+      multiparty = Multiparty.new
+      multiparty[:criteria] = { content_type: 'application/json', content: %Q({"process_now": 1, "sub_merchant_id": "#{merchant_id}"}) }
+      multiparty[:data] = { filename: "merchant_#{merchant_id}.txt", content_type: 'text/plain', content: content}
+
+      headers = {"FileType" => "STD"}
+      headers.merge!(Hash[*multiparty.header.strip.split(': ')])
+      body = multiparty.body + "\r\n"
+      post("#{Beanstream.api_base_url()}/batchpayments", nil, headers, body)
+    end
     private
 
     def set_query_string(params)
@@ -65,46 +78,47 @@ module Beanstream
       Base64.encode64(str).gsub("\n", "")
     end
 
-    def post(method, url_path, query_string, data={})
+    def post(url_path, query_string, headers = {}, body = nil)
       enc = encode(Beanstream.merchant_id, Beanstream.batch_api_key)
-      
-      path = Beanstream.api_host_url+url_path
-      path += '?' + query_string.to_query if query_string
 
-      req_params = {
-        :verify_ssl => OpenSSL::SSL::VERIFY_PEER,
-        :ssl_ca_file => Beanstream.ssl_ca_cert,
-        :timeout => Beanstream.timeout,
-        :open_timeout => Beanstream.open_timeout,
-        :headers => {
-          :authorization => "Passcode #{enc}",
-          :content_type => "application/json"
-        },
-        :method => method,
-        :url => path,
-        :payload => <<-DATA
-        DATA
-      }
+      uri = Beanstream.api_host_url+url_path
+      uri += '?' + query_string.to_query if query_string
+      url = URI(uri)
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+      http.ca_file = Beanstream.ssl_ca_cert
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      # http.set_debug_output $stderr
+      request = Net::HTTP::Post.new(url)
       
+      headers.merge!({ Authorization: "Passcode #{enc}" })
+      headers.each { |k,v| request[k] = v }
+      request.body = body
+
       begin
-        result = RestClient::Request.execute(req_params)
-        response = Hash.from_xml(result)['response']
-
-        response['responseCode'].to_i == 1 ? response : raise(handle_api_error(response))
+        result = http.request(request)
+        response = Hash.from_xml(result.read_body)['response'] rescue JSON.parse(result.read_body)
+        code = response['responseCode'] || response['code']
+        message = response['responseMessage'] || response['message']
+        code.to_i == 1 ? normalize_response(response) : raise(handle_api_error(code, message, response))
       rescue RestClient::Exception => ex
         raise handle_restclient_error(ex)
       end
-      
     end    
 
-    def handle_api_error(ex)
+    def normalize_response(response)
+      if response["responseCode"]
+        response["code"] = response.delete "responseCode"
+        response["message"] = response.delete "responseMessage"
+      end
+      response
+    end
+
+    def handle_api_error(code, message, ex)
       begin
-        obj = Util.symbolize_names(ex)
-        code = obj[:responseCode]
-        message = obj[:responseMessage]
-        "Error #{code}: #{message} #{ex}"
+        "Error #{code}: #{message} #{normalize_response(ex)}"
       rescue JSON::ParserError
-        "Error parsing xml error message"
+        "Error parsing error message"
       end
     end
 

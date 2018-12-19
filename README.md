@@ -1,7 +1,5 @@
 # Bambora's Ruby SDK
 
-Integration with Bambora’s payments gateway is a simple, flexible solution.
-
 You can choose between a straightforward payment requiring very few parameters; or, you can customize a feature-rich integration.
 
 To assist as a centralized record of all your sales, we also accept cash and cheque transactions.
@@ -202,6 +200,27 @@ result = Beanstream::BankAPI.new().get_profile({
   "bankAccountType"=>"PC",
   "lastCCTransDate"=>"1/1/1900",
   "paymentModifiedDate"=>"1/1/1900"
+}
+```
+
+### Batch payments
+```ruby
+transactions = [
+  ["A","C",nil,nil,nil,10000,7777,nil,"XXXXXXXXXXXXX","dynamic descriptor"]
+]
+Beanstream::BankAPI.new().batch_payments(Beanstream.sub_merchant_id, transactions)
+```
+
+**Response:**
+
+```
+{
+  "code"=>1,
+  "message"=>"File successfully received",
+  "batch_id"=>10000031,
+  "process_date"=>"20181219",
+  "process_time_zone"=>"GMT-08:00",
+  "batch_mode"=>"test"
 }
 ```
 

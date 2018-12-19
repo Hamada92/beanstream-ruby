@@ -1,4 +1,8 @@
 require 'active_support/all'
+require 'securerandom'
+require 'uri'
+require 'net/http'
+require 'multiparty'
 
 require 'beanstream/transaction'
 require 'beanstream/payments_api'
