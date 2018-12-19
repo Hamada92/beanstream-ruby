@@ -31,14 +31,14 @@ module Beanstream
       post('/scripts/payment_profile.asp', query_string)
     end
 
-    def batch_payments(merchant_id, transactions)
+    def batch_payments(sub_merchant_id, transactions)
       content = ""
       transactions.each do |row|
         content += "#{row.join(",")}\r\n"
       end
       multiparty = Multiparty.new
-      multiparty[:criteria] = { content_type: 'application/json', content: %Q({"process_now": 1, "sub_merchant_id": "#{merchant_id}"}) }
-      multiparty[:data] = { filename: "merchant_#{merchant_id}.txt", content_type: 'text/plain', content: content}
+      multiparty[:criteria] = { content_type: 'application/json', content: %Q({"process_now": 1, "sub_merchant_id": "#{sub_merchant_id}"}) }
+      multiparty[:data] = { filename: "merchant_#{sub_merchant_id}.txt", content_type: 'text/plain', content: content}
 
       headers = {"FileType" => "STD"}
       headers.merge!(Hash[*multiparty.header.strip.split(': ')])
@@ -46,6 +46,25 @@ module Beanstream
       post("#{Beanstream.api_base_url()}/batchpayments", nil, headers, body)
     end
 
+    def batch_report(sub_merchant_id, batch_id, from, to)
+      body = %Q{<?xml version="1.0" encoding="utf-8"?>
+        <request>
+          <rptVersion>2.0</rptVersion>
+          <serviceName>BatchPaymentsACH</serviceName>
+          <merchantId>#{Beanstream.merchant_id}</merchantId>
+          <subMerchantId>#{sub_merchant_id}</subMerchantId>
+          <sessionSource>external</sessionSource >
+          <passCode>#{Beanstream.reporting_api_key}</passCode>
+          <rptFormat>JSON</rptFormat>
+          <rptFromDateTime>#{from}</rptFromDateTime>
+          <rptToDateTime>#{to}</rptToDateTime>
+          <rptFilterBy1>batch_id</rptFilterBy1>
+          <rptOperationType1>EQ</rptOperationType1>
+          <rptFilterValue1>#{batch_id}</rptFilterValue1>
+        </request>
+      }
+      post('/scripts/reporting/report.aspx', nil, {"Content-Type" => "application/xml"}, body)
+    end
 
     private
 
@@ -80,6 +99,7 @@ module Beanstream
     end
 
     def post(url_path, query_string, headers = {}, body = nil)
+      headers ||= {}
       enc = encode(Beanstream.merchant_id, Beanstream.batch_api_key)
 
       uri = Beanstream.api_host_url+url_path
@@ -98,7 +118,9 @@ module Beanstream
 
       begin
         result = http.request(request)
-        response = Hash.from_xml(result.read_body)['response'] rescue JSON.parse(result.read_body)
+        response = Hash.from_xml(result.read_body) rescue nil
+        response ||= JSON.parse(result.read_body)
+        response = response["response"] if response["response"]
         code = response['responseCode'] || response['code']
         message = response['responseMessage'] || response['message']
         code.to_i == 1 ? normalize_response(response) : raise(handle_api_error(code, message, response))
