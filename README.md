@@ -206,8 +206,7 @@ result = Beanstream::BankAPI.new().get_profile({
 ### Batch payments
 ```ruby
 transactions = [
-  ["A","C",nil,nil,nil,10000,7777,nil,"XXXXXXXXXXXXXXXXXX","dynamic descriptor"],
-  ["A","C",nil,nil,nil,10000,7778,nil,"XXXXXXXXXXXXXXXXXX","dynamic descriptor"]
+  ["A","C",nil,nil,nil,10000,7777,nil,"XXXXXXXXXXXXX","dynamic descriptor"]
 ]
 Beanstream::BankAPI.new().batch_payments(Beanstream.sub_merchant_id, transactions)
 ```
@@ -222,6 +221,88 @@ Beanstream::BankAPI.new().batch_payments(Beanstream.sub_merchant_id, transaction
   "process_date"=>"20181219",
   "process_time_zone"=>"GMT-08:00",
   "batch_mode"=>"test"
+}
+```
+
+### Batch report
+
+```ruby
+Beanstream.reporting_api_key = "XXXXXXXXXXXXXXXXXXXX"
+
+Beanstream::BankAPI.new().batch_report(
+  Beanstream.sub_merchant_id,
+  10000036,
+  "2018-11-11 00:00:00",
+  "2018-12-31 00:00:00"
+)
+```
+
+**Response:**
+
+```
+{
+  "version"=>"1.0",
+  "code"=>1,
+  "message"=>"Report generated",
+  "records"=>{
+    "total"=>0
+  },
+  "record"=>[
+    {
+      "rowId"=>0,
+      "merchantId"=>XXXXXXXXXX,
+      "batchId"=>10000036,
+      "transId"=>25,
+      "itemNumber"=>1,
+      "payeeName"=>"John Doe",
+      "reference"=>"7777",
+      "operationType"=>"C",
+      "amount"=>10000,
+      "bankAccountType"=>"PC",
+      "secCode"=>"   ",
+      "stateId"=>2,
+      "stateName"=>"Scheduled",
+      "statusId"=>3,
+      "statusName"=>"Transaction Warning",
+      "bankDescriptor"=>"dynamic descriptor",
+      "messageId"=>"10",
+      "customerCode"=>"XXXXXXXXXXXXXXXXXXXX",
+      "settlementDate"=>"2018-12-20",
+      "returnedDate"=>"",
+      "eftId"=>0,
+      "nocDate"=>"",
+      "nocAccountType"=>"",
+      "nocRoutingNumber"=>"",
+      "nocAccountNumber"=>""
+    },
+    {
+      "rowId"=>0,
+      "merchantId"=>XXXXXXXXXXX,
+      "batchId"=>10000036,
+      "transId"=>26,
+      "itemNumber"=>2,
+      "payeeName"=>"John Doe",
+      "reference"=>"7778",
+      "operationType"=>"C",
+      "amount"=>10000,
+      "bankAccountType"=>"PC",
+      "secCode"=>"   ",
+      "stateId"=>2,
+      "stateName"=>"Scheduled",
+      "statusId"=>3,
+      "statusName"=>"Transaction Warning",
+      "bankDescriptor"=>"dynamic descriptor",
+      "messageId"=>"10",
+      "customerCode"=>"XXXXXXXXXXXXXXXXXXXX",
+      "settlementDate"=>"2018-12-20",
+      "returnedDate"=>"",
+      "eftId"=>0,
+      "nocDate"=>"",
+      "nocAccountType"=>"",
+      "nocRoutingNumber"=>"",
+      "nocAccountNumber"=>""
+    }
+  ]
 }
 ```
 
