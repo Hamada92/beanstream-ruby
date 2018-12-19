@@ -84,7 +84,6 @@ module Beanstream
       elsif code >= 500
         raise InternalServerException.new(code, category, message, http_status_code)
       else
-        puts obj
         raise BeanstreamException.new(code, category, message, http_status_code)
       end
     end

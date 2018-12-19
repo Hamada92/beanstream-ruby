@@ -121,9 +121,8 @@ module Beanstream
         response = Hash.from_xml(result.read_body) rescue nil
         response ||= JSON.parse(result.read_body)
         response = response["response"] if response["response"]
-        code = response['responseCode'] || response['code']
-        message = response['responseMessage'] || response['message']
-        code.to_i == 1 ? normalize_response(response) : raise(handle_api_error(code, message, response))
+
+        normalize_response(response)
       rescue RestClient::Exception => ex
         raise handle_restclient_error(ex)
       end
@@ -134,15 +133,8 @@ module Beanstream
         response["code"] = response.delete "responseCode"
         response["message"] = response.delete "responseMessage"
       end
+      response["code"] = response["code"].to_i
       response
-    end
-
-    def handle_api_error(code, message, ex)
-      begin
-        "Error #{code}: #{message} #{normalize_response(ex)}"
-      rescue JSON::ParserError
-        "Error parsing error message"
-      end
     end
 
     def handle_restclient_error(e)
