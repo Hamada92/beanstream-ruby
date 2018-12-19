@@ -32,11 +32,10 @@ module Beanstream
     end
 
     def batch_payments(merchant_id, transactions)
-      content = nil
+      content = ""
       transactions.each do |row|
-        content = row.join(",")
+        content += "#{row.join(",")}\r\n"
       end
-
       multiparty = Multiparty.new
       multiparty[:criteria] = { content_type: 'application/json', content: %Q({"process_now": 1, "sub_merchant_id": "#{merchant_id}"}) }
       multiparty[:data] = { filename: "merchant_#{merchant_id}.txt", content_type: 'text/plain', content: content}
@@ -46,6 +45,8 @@ module Beanstream
       body = multiparty.body + "\r\n"
       post("#{Beanstream.api_base_url()}/batchpayments", nil, headers, body)
     end
+
+
     private
 
     def set_query_string(params)

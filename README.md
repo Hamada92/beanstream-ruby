@@ -206,7 +206,8 @@ result = Beanstream::BankAPI.new().get_profile({
 ### Batch payments
 ```ruby
 transactions = [
-  ["A","C",nil,nil,nil,10000,7777,nil,"XXXXXXXXXXXXX","dynamic descriptor"]
+  ["A","C",nil,nil,nil,10000,7777,nil,"XXXXXXXXXXXXXXXXXX","dynamic descriptor"],
+  ["A","C",nil,nil,nil,10000,7778,nil,"XXXXXXXXXXXXXXXXXX","dynamic descriptor"]
 ]
 Beanstream::BankAPI.new().batch_payments(Beanstream.sub_merchant_id, transactions)
 ```
