@@ -66,6 +66,14 @@ module Beanstream
       post('/scripts/reporting/report.aspx', nil, {"Content-Type" => "application/xml"}, body)
     end
 
+    def self.format_transaction_as_csv(type, params)
+      if type == 'EFT'
+        'E,' + [:transaction_type, :institution_number, :transit_number, :account_number, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}.join(',')
+      elsif type == 'ACH'
+        'A,' + [:transaction_type, :routing_number, :account_number, :account_code, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}.join(',')
+      end
+    end
+
     private
 
     def set_query_string(params)
