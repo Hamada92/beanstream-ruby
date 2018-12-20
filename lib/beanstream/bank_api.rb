@@ -68,9 +68,9 @@ module Beanstream
 
     def self.format_transaction_as_csv(type, params)
       if type == 'EFT'
-        'E,' + [:transaction_type, :institution_number, :transit_number, :account_number, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}.join(',')
+        ['E'] + [:transaction_type, :institution_number, :transit_number, :account_number, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}
       elsif type == 'ACH'
-        'A,' + [:transaction_type, :routing_number, :account_number, :account_code, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}.join(',')
+        ['A'] + [:transaction_type, :routing_number, :account_number, :account_code, :amount, :reference_number, :recipient_name, :customer_code, :description].map { |k| params[k]}
       end
     end
 
