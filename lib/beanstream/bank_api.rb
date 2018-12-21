@@ -117,7 +117,7 @@ module Beanstream
       http.use_ssl = true
       http.ca_file = Beanstream.ssl_ca_cert
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      http.set_debug_output $stderr
+      # http.set_debug_output $stderr
       request = Net::HTTP::Post.new(url)
       
       headers.merge!({ Authorization: "Passcode #{enc}" })
