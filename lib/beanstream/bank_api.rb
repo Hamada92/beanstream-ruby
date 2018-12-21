@@ -46,7 +46,7 @@ module Beanstream
       post("#{Beanstream.api_base_url()}/batchpayments", nil, headers, body)
     end
 
-    def batch_report(sub_merchant_id, batch_id, from, to)
+    def batch_report(sub_merchant_id, batch_id, from="", to="")
       body = %Q{<?xml version="1.0" encoding="utf-8"?>
         <request>
           <rptVersion>2.0</rptVersion>
