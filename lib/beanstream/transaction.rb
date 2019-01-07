@@ -36,7 +36,7 @@ module Beanstream
       
       begin
         result = RestClient::Request.execute(req_params)
-        JSON.parse(result)
+        Util.symbolize_names(JSON.parse(result))
       rescue RestClient::ExceptionWithResponse => ex
         if ex.response
           handle_api_error(ex)
