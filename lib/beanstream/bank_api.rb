@@ -14,19 +14,19 @@ module Beanstream
     end
 
     def create_profile(profile)
-      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string = set_query_string(profile.symbolize_keys).merge(@default_query_string)
       query_string[:operationType] = 'N'
       post('/scripts/payment_profile.asp', query_string)
     end
 
     def update_profile(profile)
-      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string = set_query_string(profile.symbolize_keys).merge(@default_query_string)
       query_string[:operationType] = 'M'
       post('/scripts/payment_profile.asp', query_string)
     end
 
     def get_profile(profile)
-      query_string = set_query_string(profile).merge(@default_query_string)
+      query_string = set_query_string(profile.symbolize_keys).merge(@default_query_string)
       query_string[:operationType] = 'Q'
       post('/scripts/payment_profile.asp', query_string)
     end
