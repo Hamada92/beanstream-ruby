@@ -16,6 +16,7 @@ module Beanstream
     def create_profile(profile)
       query_string = set_query_string(profile.symbolize_keys).merge(@default_query_string)
       query_string[:operationType] = 'N'
+      query_string.delete(:subMerchantId)
       post('/scripts/payment_profile.asp', query_string)
     end
 
